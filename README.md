@@ -64,11 +64,15 @@ https://developer.mozilla.org/zh-CN/docs/Web/API/Window/requestIdleCallback
 
 ###### 补充学习
 
-#### 实现 performUnitOfWork 
-    1. 创建 dom
-    2. 把 dom 添加到父容器内
-    3. 设置 dom 的props
-    4. 建立关系 child sibling parent
-    5. 返回下一个节点
+#### 步骤拆分
+    1. 启动浏览器空闲时永久调用任务
+    2. render 时，初始化要渲染的第一个节点，空闲时调用 performUnitOfWork 渲染当前节点，并返回下一个要渲染的节点
+    3. 实现 performUnitOfWork
+       1. 创建 dom
+       2. 把 dom 添加到父容器内
+       3. 设置 dom 的props
+       4. 生成链表，建立关系 child sibling parent
+       5. 返回下一个节点
+    4. 代码重构
 
 
