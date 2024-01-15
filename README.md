@@ -89,3 +89,14 @@ https://developer.mozilla.org/zh-CN/docs/Web/API/Window/requestIdleCallback
     1. 记录初始 root 节点
     2. 当链表执行结束，遍历 dom 树，挂载dom
 
+## 支持 function component
+
+#### 解决思路
+把 fc 当成一个盒子，然后拆盒子，盒子里的内容是普通的 dom 树。
+
+#### 步骤拆分
+
+    1. type 的区分处理
+    2. 区分 fc 和 非 fc
+    3. 添加到视图
+    4. porps 的处理
