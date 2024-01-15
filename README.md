@@ -75,4 +75,28 @@ https://developer.mozilla.org/zh-CN/docs/Web/API/Window/requestIdleCallback
        5. 返回下一个节点
     4. 代码重构
 
+#### 遗留问题
+> requestIdleCallback 分帧运算，在特殊情况下中间没有空闲时间，用户会看到渲染一半的 dom。这种情况如何解决？
+   
+## 统一提交
 
+#### 遗留问题的解决方案
+
+计算结束后统一添加到屏幕里面
+
+#### 步骤拆分
+
+    1. 记录初始 root 节点
+    2. 当链表执行结束，遍历 dom 树，挂载dom
+
+## 支持 function component
+
+#### 解决思路
+把 fc 当成一个盒子，然后拆盒子，盒子里的内容是普通的 dom 树。
+
+#### 步骤拆分
+
+    1. type 的区分处理
+    2. 区分 fc 和 非 fc
+    3. 添加到视图
+    4. porps 的处理

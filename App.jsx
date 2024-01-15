@@ -1,8 +1,10 @@
 import React from './core/React';
 
-// const App = () => <div id="app">hello word!</div>;
+const Child3 = ({ num }) => <div>child-{num}</div>;
 
-const App = (
+const Child4 = ({ num }) => <div>child-{num}</div>;
+
+const App = () => (
     <div id="app">
         hello word!
         <p>
@@ -13,8 +15,8 @@ const App = (
             child-2
             <p>child-child-2</p>
         </p>
+        <Child3 num={3} />
+        <Child4 num={4} />
     </div>);
-
-console.log(App);
 
 export default App;
