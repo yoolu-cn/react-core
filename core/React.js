@@ -29,6 +29,7 @@ function render(vdom, container) {
             children: [vdom],
         },
     };
+    rootNode = nextUnitOfWork;
 };
 
 function createDom(type) {
@@ -69,7 +70,6 @@ function performUnitOfWork(fiber) {
     // 创建dom, 挂载dom, 挂载 props
     if (!fiber.dom) {
         const dom = (fiber.dom = createDom(fiber.type));
-        fiber.parent.dom.append(dom);
         updateProps(fiber, dom);
     }
     // 初始化链表
@@ -86,8 +86,8 @@ function performUnitOfWork(fiber) {
     return findParent(fiber);
 }
 
-
 let nextUnitOfWork = null;
+let rootNode = null;
 /**
  * 浏览器空闲时永久执行
  * @param {*} IdleDeadline 
@@ -99,7 +99,23 @@ function workLoop(IdleDeadline) {
         nextUnitOfWork = performUnitOfWork(nextUnitOfWork);
         shouldYield = IdleDeadline.timeRemaining() < 1;
     }
+
+    if (!nextUnitOfWork && !!rootNode) {
+        commitRoot(rootNode);
+    }
     requestIdleCallback(workLoop);
+}
+
+function commitRoot() {
+    commitWork(rootNode.child);
+    rootNode = null;
+}
+
+function commitWork(fiber) {
+    if (!fiber) return;
+    fiber.parent.dom.append(fiber.dom);
+    commitWork(fiber.child);
+    commitWork(fiber.sibling);
 }
 
 requestIdleCallback(workLoop);
