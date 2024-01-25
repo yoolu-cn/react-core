@@ -105,3 +105,26 @@ https://developer.mozilla.org/zh-CN/docs/Web/API/Window/requestIdleCallback
 
 #### 如何点击触发更新
 基于 onClick 来注册点击事件, onClick 为属性，props 判断 key 为事件时，给 dom 绑定事件监听。
+
+## 实现更新
+
+#### 问题
+    1. 如何触发更新？
+    2. 如何获取新老fiber？
+    3. 老的 fiber 存在哪里？
+
+#### 解决方案
+
+    1. 将新的root 赋值给执行工作单元，触发更新
+    2. 使用链表，每一个节点一一对应
+    3. 使用链表将老的 fiber 通过引用，存储到新的 fiber
+
+#### 拆分步骤
+
+    1. 存储旧的root
+    2. 通过 type 是否一致来判断，是否更新节点，还是新增节点，重新生成链表，标记更新还是新增
+       1. 难点： 新的节点和老的节点一一对应
+    3. 新增时，挂载dom, 修改时，更新 props
+       1. new 无，old 有， 删除
+       2. new 有，old 无， 新增
+       3. new 有，old 有， 更新

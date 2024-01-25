@@ -4,16 +4,22 @@ const Child3 = ({ num }) => <div>child-{num}</div>;
 
 const Child4 = ({ num }) => <div>child-{num}</div>;
 
+let num = 1;
+let props = { id: '1111' };
 const App = () => {
     function handleClick() {
         console.log('click');
+        num++;
+        props = {};
+        React.update();
     }
     return (
         <div id="app">
             hello word!
-            <p>
+            <p {...props}>
                 child-1
                 <p>child-child-1</p>
+                <b>{num}</b>
                 <button onClick={handleClick}>点我</button>
             </p>
             <p>
