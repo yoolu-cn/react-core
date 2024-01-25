@@ -100,3 +100,8 @@ https://developer.mozilla.org/zh-CN/docs/Web/API/Window/requestIdleCallback
     2. 区分 fc 和 非 fc
     3. 添加到视图
     4. porps 的处理
+
+## 实现绑定事件
+
+#### 如何点击触发更新
+基于 onClick 来注册点击事件, onClick 为属性，props 判断 key 为事件时，给 dom 绑定事件监听。
