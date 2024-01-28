@@ -27,6 +27,7 @@ let nextUnitOfWork = null;
 let wipRoot = null;
 let currentRoot = null;
 let deletions = [];
+let wipFiber = null;
 function render(vdom, container) {
     wipRoot = {
         dom: container,
@@ -38,12 +39,15 @@ function render(vdom, container) {
 };
 
 function update() {
-    wipRoot = {
-        dom: currentRoot.dom,
-        props: currentRoot.props,
-        alternate: currentRoot,
-    };
-    nextUnitOfWork = wipRoot;
+    let currentFiber = wipFiber;
+    
+    return () => {
+        wipRoot = {
+            ...currentFiber,
+            alternate: currentFiber,
+        };
+        nextUnitOfWork = wipRoot;
+    }
 };
 
 function createDom(type) {
@@ -138,6 +142,7 @@ function reconcileChildren(fiber, children) {
 }
 
 function updateFunctionComponent(fiber) {
+    wipFiber = fiber;
     const children = [fiber.type(fiber.props)];
     reconcileChildren(fiber, children);
 }
@@ -181,6 +186,9 @@ function workLoop(IdleDeadline) {
     while (!shouldYield && !!nextUnitOfWork) {
         // 执行任务并返回下一个任务
         nextUnitOfWork = performUnitOfWork(nextUnitOfWork);
+        if (wipRoot?.sibling?.type === nextUnitOfWork?.type) {
+            nextUnitOfWork = null;
+        }
         shouldYield = IdleDeadline.timeRemaining() < 1;
     }
 
