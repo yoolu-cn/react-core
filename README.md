@@ -146,3 +146,7 @@ function Bar() { return (<p>bar</p>)}
 ```jsx
 {showFoo ? <div>Foo</div> : <p>p-bar<div>div-bar1</div><p>p-bar2</p></p>}
 ```
+###### 3. 处理 edge case
+```jsx
+{showFoo && <div>Foo</div>}
+```

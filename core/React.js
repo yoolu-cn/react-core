@@ -94,15 +94,17 @@ function reconcileChildren(fiber, children) {
                 alternate: oldFiber,
             };
         } else {
-            newFiber = {
-                type: child.type,
-                props: child.props,
-                dom: null,
-                child: null,
-                parent: fiber,
-                sibling: null,
-                EffectTag: 'placement',
-            };
+            if (child) {
+                newFiber = {
+                    type: child.type,
+                    props: child.props,
+                    dom: null,
+                    child: null,
+                    parent: fiber,
+                    sibling: null,
+                    EffectTag: 'placement',
+                };
+            }
             if (oldFiber) {
                 deletions.push(oldFiber);
             }
@@ -119,7 +121,12 @@ function reconcileChildren(fiber, children) {
         } else {
             prevChild.sibling = newFiber;
         }
-        prevChild = newFiber;
+        /**
+         * 处理边界情况， bool && <Component />
+         */
+        if (newFiber) {
+            prevChild = newFiber;
+        }
     });
     /**
      * 还有多余节点，则删除

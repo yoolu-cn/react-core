@@ -6,7 +6,7 @@ const Child4 = ({ num }) => <div>child-{num}</div>;
 
 let num = 1;
 let props = { id: '1111' };
-let isShowBar = true;
+let isShowBar = false;
 const App = () => {
     function handleClick() {
         console.log('click');
@@ -41,7 +41,10 @@ const App = () => {
             {/** type 不同，老节点为 function component, 删除老节点 */}
             {/* {isShowBar ? Foo : <FnBar />} */}
             {/** type 相同，老节点比新节点长, 删除老节点 */}
-            {isShowBar ? Foo : multipleChildBar}
+            {/* {isShowBar ? Foo : multipleChildBar} */}
+            {/** 处理 && 边界问题, 1. 最后一个为 边界问题， 中午为边界问题*/}
+            {isShowBar && <FnBar />}
+            {<FnBar />}
         </div>
     );
 };
