@@ -128,3 +128,28 @@ https://developer.mozilla.org/zh-CN/docs/Web/API/Window/requestIdleCallback
        1. new 无，old 有， 删除
        2. new 有，old 无， 新增
        3. new 有，old 有， 更新
+
+## 实现更新children
+
+#### 步骤拆分
+
+###### 1. type 不同，删除老节点。
+```jsx
+// 1. 老节点为普通dom
+{showFoo ? <div>Foo</div> : <p>bar</p>}
+
+function Bar() { return (<p>bar</p>)}
+// 2. 老节点为 function componment
+{showFoo ? <div>Foo</div> : <Bar/>}
+```
+###### 2. type 相同，新节点比老节点短，diff 删除多余的老节点
+```jsx
+{showFoo ? <div>Foo</div> : <p>p-bar<div>div-bar1</div><p>p-bar2</p></p>}
+```
+###### 3. 处理 edge case
+```jsx
+{showFoo && <div>Foo</div>}
+```
+###### 4. 更新子组件的时候，其他不相关的组件也会重新执行，优化更新逻辑
+1. 开始点：当前更新组件，使用闭包记录
+2. 结束点：遍历完整node树，当处理兄弟节点的时候

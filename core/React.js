@@ -1,4 +1,4 @@
-import { findParent } from "../utils/tools";
+import { isFunctionComponent } from "../utils/tools";
 
 function createTextNode(text) {
     return {
@@ -26,7 +26,8 @@ function createElement(type, props, ...children) {
 let nextUnitOfWork = null;
 let wipRoot = null;
 let currentRoot = null;
-
+let deletions = [];
+let wipFiber = null;
 function render(vdom, container) {
     wipRoot = {
         dom: container,
@@ -38,12 +39,15 @@ function render(vdom, container) {
 };
 
 function update() {
-    wipRoot = {
-        dom: currentRoot.dom,
-        props: currentRoot.props,
-        alternate: currentRoot,
-    };
-    nextUnitOfWork = wipRoot;
+    let currentFiber = wipFiber;
+    
+    return () => {
+        wipRoot = {
+            ...currentFiber,
+            alternate: currentFiber,
+        };
+        nextUnitOfWork = wipRoot;
+    }
 };
 
 function createDom(type) {
@@ -94,17 +98,21 @@ function reconcileChildren(fiber, children) {
                 alternate: oldFiber,
             };
         } else {
-            newFiber = {
-                type: child.type,
-                props: child.props,
-                dom: null,
-                child: null,
-                parent: fiber,
-                sibling: null,
-                EffectTag: 'placement',
-            };
+            if (child) {
+                newFiber = {
+                    type: child.type,
+                    props: child.props,
+                    dom: null,
+                    child: null,
+                    parent: fiber,
+                    sibling: null,
+                    EffectTag: 'placement',
+                };
+            }
+            if (oldFiber) {
+                deletions.push(oldFiber);
+            }
         }
-
         /**
          * 重点计算fiber节点的下一个节点
          */
@@ -117,11 +125,24 @@ function reconcileChildren(fiber, children) {
         } else {
             prevChild.sibling = newFiber;
         }
-        prevChild = newFiber;
+        /**
+         * 处理边界情况， bool && <Component />
+         */
+        if (newFiber) {
+            prevChild = newFiber;
+        }
     });
+    /**
+     * 还有多余节点，则删除
+     */
+    while (oldFiber) {
+        deletions.push(oldFiber);
+        oldFiber = oldFiber.sibling;
+    }
 }
 
 function updateFunctionComponent(fiber) {
+    wipFiber = fiber;
     const children = [fiber.type(fiber.props)];
     reconcileChildren(fiber, children);
 }
@@ -139,8 +160,7 @@ function updateHostComponent(fiber) {
 }
 
 function performUnitOfWork(fiber) {
-    const isFunctionComponent = typeof fiber.type === 'function';
-    if (!isFunctionComponent) {
+    if (!isFunctionComponent(fiber)) {
         updateHostComponent(fiber);
     } else {
         updateFunctionComponent(fiber);
@@ -166,6 +186,9 @@ function workLoop(IdleDeadline) {
     while (!shouldYield && !!nextUnitOfWork) {
         // 执行任务并返回下一个任务
         nextUnitOfWork = performUnitOfWork(nextUnitOfWork);
+        if (wipRoot?.sibling?.type === nextUnitOfWork?.type) {
+            nextUnitOfWork = null;
+        }
         shouldYield = IdleDeadline.timeRemaining() < 1;
     }
 
@@ -176,9 +199,23 @@ function workLoop(IdleDeadline) {
 }
 
 function commitRoot() {
+    deletions.forEach(commitDeletion);
     commitWork(wipRoot.child);
     currentRoot = wipRoot;
+    deletions = [];
     wipRoot = null;
+}
+
+function commitDeletion(fiber) {
+    if (fiber.dom) {
+        let fiberParent = fiber.parent;
+        while(!fiberParent.dom) {
+            fiberParent = fiberParent.parent;
+        }
+        fiberParent.dom.removeChild(fiber.dom);
+    } else {
+        commitDeletion(fiber.child);
+    }
 }
 
 function commitWork(fiber) {
@@ -193,7 +230,9 @@ function commitWork(fiber) {
             fiberParent.dom.append(fiber.dom);
         } 
     } else if (fiber.EffectTag === 'update') {
-        updateProps(fiber.dom, fiber.props, fiber.alternate?.props);
+        if (!isFunctionComponent(fiber)) {
+            updateProps(fiber.dom, fiber.props, fiber.alternate?.props);
+        }
     }
     
     commitWork(fiber.child);
