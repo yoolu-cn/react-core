@@ -1,4 +1,4 @@
-import { findParent } from "../utils/tools";
+import { isFunctionComponent } from "../utils/tools";
 
 function createTextNode(text) {
     return {
@@ -26,7 +26,7 @@ function createElement(type, props, ...children) {
 let nextUnitOfWork = null;
 let wipRoot = null;
 let currentRoot = null;
-
+let deletions = [];
 function render(vdom, container) {
     wipRoot = {
         dom: container,
@@ -103,8 +103,10 @@ function reconcileChildren(fiber, children) {
                 sibling: null,
                 EffectTag: 'placement',
             };
+            if (oldFiber) {
+                deletions.push(oldFiber);
+            }
         }
-
         /**
          * 重点计算fiber节点的下一个节点
          */
@@ -139,8 +141,7 @@ function updateHostComponent(fiber) {
 }
 
 function performUnitOfWork(fiber) {
-    const isFunctionComponent = typeof fiber.type === 'function';
-    if (!isFunctionComponent) {
+    if (!isFunctionComponent(fiber)) {
         updateHostComponent(fiber);
     } else {
         updateFunctionComponent(fiber);
@@ -176,9 +177,23 @@ function workLoop(IdleDeadline) {
 }
 
 function commitRoot() {
+    deletions.forEach(commitDeletion);
     commitWork(wipRoot.child);
     currentRoot = wipRoot;
+    deletions = [];
     wipRoot = null;
+}
+
+function commitDeletion(fiber) {
+    if (fiber.dom) {
+        let fiberParent = fiber.parent;
+        while(!fiberParent.dom) {
+            fiberParent = fiberParent.parent;
+        }
+        fiberParent.dom.removeChild(fiber.dom);
+    } else {
+        commitDeletion(fiber.child);
+    }
 }
 
 function commitWork(fiber) {
@@ -193,7 +208,9 @@ function commitWork(fiber) {
             fiberParent.dom.append(fiber.dom);
         } 
     } else if (fiber.EffectTag === 'update') {
-        updateProps(fiber.dom, fiber.props, fiber.alternate?.props);
+        if (!isFunctionComponent(fiber)) {
+            updateProps(fiber.dom, fiber.props, fiber.alternate?.props);
+        }
     }
     
     commitWork(fiber.child);

@@ -1,6 +1,1 @@
-export function findParent(work) {
-    if (!work.parent) {
-        return;
-    }
-    return work.parent?.sibling || findParent(work.parent);
-}
+export const isFunctionComponent = (fiber) => typeof fiber.type === 'function';

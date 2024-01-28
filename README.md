@@ -128,3 +128,17 @@ https://developer.mozilla.org/zh-CN/docs/Web/API/Window/requestIdleCallback
        1. new 无，old 有， 删除
        2. new 有，old 无， 新增
        3. new 有，old 有， 更新
+
+## 实现更新children
+
+#### 步骤拆分
+
+###### 1. type 不同，删除老节点。
+```jsx
+// 1. 老节点为普通dom
+{showFoo ? <div>Foo</div> : <p>bar</p>}
+
+function Bar() { return (<p>bar</p>)}
+// 2. 老节点为 function componment
+{showFoo ? <div>Foo</div> : <Bar/>}
+```
