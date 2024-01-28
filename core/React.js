@@ -121,6 +121,13 @@ function reconcileChildren(fiber, children) {
         }
         prevChild = newFiber;
     });
+    /**
+     * 还有多余节点，则删除
+     */
+    while (oldFiber) {
+        deletions.push(oldFiber);
+        oldFiber = oldFiber.sibling;
+    }
 }
 
 function updateFunctionComponent(fiber) {

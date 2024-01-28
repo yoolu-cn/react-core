@@ -17,6 +17,7 @@ const App = () => {
     }
     const Foo = <div style="background-color: red;color:#fff;">div-foo</div>
     const Bar = <p style="background-color: blue;color:#fff;">p-bar</p>
+    const multipleChildBar = <div style="background-color: blue;color:#fff;">p-bar<div>div-bar1</div><p>p-bar2</p></div>
     function FnBar() {
         return <p style="background-color: blue;color:#fff;">fn-bar</p>;
     }
@@ -38,7 +39,9 @@ const App = () => {
             {/** type 不同，老节点为不同 dom, 删除老节点 */}
             {/* {isShowBar ? Foo : Bar} */}
             {/** type 不同，老节点为 function component, 删除老节点 */}
-            {isShowBar ? Foo : <FnBar />}
+            {/* {isShowBar ? Foo : <FnBar />} */}
+            {/** type 相同，老节点比新节点长, 删除老节点 */}
+            {isShowBar ? Foo : multipleChildBar}
         </div>
     );
 };

@@ -142,3 +142,7 @@ function Bar() { return (<p>bar</p>)}
 // 2. 老节点为 function componment
 {showFoo ? <div>Foo</div> : <Bar/>}
 ```
+###### 2. type 相同，新节点比老节点短，diff 删除多余的老节点
+```jsx
+{showFoo ? <div>Foo</div> : <p>p-bar<div>div-bar1</div><p>p-bar2</p></p>}
+```
